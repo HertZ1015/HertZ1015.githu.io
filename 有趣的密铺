@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有趣的密铺 · 人教版五年级上册数学</title>
+<style>
+  /* ========== 全局基础：清新校园风、护眼浅色、大圆角 ========== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blue: #dbeafe;
+    --blue-deep: #60a5fa;
+    --yellow: #fef3c7;
+    --yellow-deep: #f59e0b;
+    --card: #ffffff;
+    --text: #334155;
+    --text-light: #64748b;
+    --bg: #f0f7ff;
+    --radius: 18px;
+  }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 18px 22px 26px;
+  }
+
+  /* ========== 顶部标题栏 ========== */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--yellow) 100%);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    box-shadow: 0 4px 14px rgba(96, 165, 250, .15);
+    margin-bottom: 18px;
+  }
+  header .tiles { display: flex; gap: 5px; }
+  header .tiles span { width: 22px; height: 22px; border-radius: 6px; display: inline-block; }
+  header .tiles span:nth-child(1) { background: var(--blue-deep); }
+  header .tiles span:nth-child(2) { background: var(--yellow-deep); }
+  header .tiles span:nth-child(3) { background: #a9d18e; }
+  header h1 { font-size: 32px; letter-spacing: 4px; color: #1e3a5f; }
+  header .subtitle { font-size: 15px; color: var(--text-light); margin-top: 4px; text-align: center; }
+
+  /* ========== 主体三栏布局 ========== */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr 250px;
+    gap: 18px;
+    align-items: start;
+  }
+  .panel {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 3px 10px rgba(100, 116, 139, .10);
+  }
+  .panel h2 {
+    font-size: 18px;
+    color: #1e3a5f;
+    margin-bottom: 12px;
+    padding-left: 10px;
+    border-left: 5px solid var(--blue-deep);
+  }
+
+  /* ----- 左侧：知识卡片 ----- */
+  .define-card {
+    background: var(--yellow);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+  .define-card strong { color: var(--yellow-deep); }
+
+  /* 图形选择按钮（两列，数量增多可滚动） */
+  .shape-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+    max-height: 330px;
+    overflow-y: auto;
+  }
+  .shape-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 10px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .shape-btn:hover { border-color: var(--blue-deep); background: var(--blue); }
+  .shape-btn.active {
+    border-color: var(--blue-deep);
+    background: var(--blue);
+    box-shadow: 0 2px 8px rgba(96,165,250,.3);
+  }
+  .shape-btn svg { flex: none; }
+
+  /* 知识点提示 */
+  .tips {
+    background: var(--blue);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .tips .ok { color: #16a34a; font-weight: bold; }
+  .tips .no { color: #dc2626; font-weight: bold; }
+
+  /* ----- 中间：互动画布 ----- */
+  .board-wrap { display: flex; flex-direction: column; gap: 12px; }
+  #board {
+    width: 100%;
+    height: 520px;
+    background: #ffffff;
+    border-radius: var(--radius);
+    border: 2px dashed var(--blue-deep);
+    background-image:
+      linear-gradient(#eef2f7 1px, transparent 1px),
+      linear-gradient(90deg, #eef2f7 1px, transparent 1px);
+    background-size: 32px 32px;
+    touch-action: none;
+    overflow: hidden;
+  }
+  #board svg { width: 100%; height: 100%; display: block; }
+  .shape-piece { cursor: grab; }
+  .shape-piece:active { cursor: grabbing; }
+  .shape-piece.selected { stroke-width: 4; stroke-dasharray: 6 4; }
+
+  .board-hint { text-align: center; font-size: 14px; color: var(--text-light); }
+
+  /* ----- 右侧：操作面板 ----- */
+  .op-panel .btn {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 10px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all .18s ease;
+  }
+  .btn-primary { background: var(--blue-deep); color: #fff; }
+  .btn-primary:hover { background: #3b82f6; }
+  .btn-warn { background: var(--yellow-deep); color: #fff; }
+  .btn-warn:hover { background: #d97706; }
+  .btn-light { background: #f1f5f9; color: var(--text); }
+  .btn-light:hover { background: #e2e8f0; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { margin-bottom: 10px; }
+  .btn:active { transform: scale(.97); }
+
+  /* 旋转角度滑块 */
+  .rotate-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .rotate-box label { display: block; margin-bottom: 8px; }
+  .rotate-box input[type=range] { width: 100%; }
+  .rotate-box .angle-val { color: var(--blue-deep); font-weight: bold; }
+
+  /* 结果提示气泡 */
+  .bubble {
+    margin-top: 6px;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    line-height: 1.7;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    min-height: 90px;
+  }
+  .bubble.success { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+  .bubble.overlap { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+  .bubble.gap { background: #fffbeb; border-color: #fcd34d; color: #d97706; }
+
+  /* ========== 底部拓展区 ========== */
+  footer { margin-top: 18px; }
+  .life-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .life-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(100,116,139,.10);
+  }
+  .life-card h3 { font-size: 17px; margin: 10px 0 6px; color: #1e3a5f; }
+  .life-card p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+
+  .think {
+    background: linear-gradient(135deg, var(--yellow) 0%, #fff 100%);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  .think strong { color: var(--yellow-deep); }
+
+  @media (max-width: 1100px) {
+    .main { grid-template-columns: 1fr; }
+    .life-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部标题栏 ===== -->
+<header>
+  <div class="tiles"><span></span><span></span><span></span></div>
+  <div>
+    <h1>有趣的密铺</h1>
+    <div class="subtitle">人教版小学数学 · 五年级上册</div>
+  </div>
+</header>
+
+<!-- ===== 主体三栏 ===== -->
+<div class="main">
+
+  <!-- 左侧：知识讲解 + 图形选择 -->
+  <aside class="panel">
+    <h2>知识小课堂</h2>
+    <div class="define-card">
+      <strong>什么是密铺？</strong><br>
+      用形状、大小完全相同的一种或几种平面图形进行拼接，彼此之间
+      <strong>不留空隙</strong>、<strong>不重叠</strong>地铺成一片，
+      这就是平面图形的密铺，又叫平面图形的镶嵌。
+    </div>
+
+    <h2>选择图形</h2>
+    <div class="shape-grid" id="shapeGrid"><!-- JS 动态生成 --></div>
+
+    <div class="tips">
+      <div class="ok">✔ 可以单独密铺：</div>
+      正方形、长方形、正三角形、正六边形、平行四边形、梯形、不规则四边形<br>
+      <div class="no">✘ 不能单独密铺：</div>
+      正五边形、正八边形、正十二边形
+    </div>
+  </aside>
+
+  <!-- 中间：互动画布 -->
+  <section class="board-wrap">
+    <div id="board">
+      <svg id="svgBoard" viewBox="0 0 800 520" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="board-hint">💡 点击图形可选中（出现虚线框），拖动可移动，右侧可旋转；再点「演示」观看每种图形的铺法。</div>
+  </section>
+
+  <!-- 右侧：操作面板 -->
+  <aside class="panel op-panel">
+    <h2>操作面板</h2>
+    <button class="btn btn-primary" id="btnAdd">➕ 添加图形</button>
+    <button class="btn btn-warn" id="btnDemo">🎬 演示当前图形密铺</button>
+
+    <div class="rotate-box">
+      <label>旋转选中图形：<span class="angle-val" id="angleVal">0°</span></label>
+      <input type="range" id="rotateSlider" min="-180" max="180" value="0" step="5">
+      <div class="btn-row">
+        <button class="btn btn-light" id="btnRotL" style="margin-bottom:0">↺ 逆时针15°</button>
+        <button class="btn btn-light" id="btnRotR" style="margin-bottom:0">↻ 顺时针15°</button>
+      </div>
+    </div>
+
+    <button class="btn btn-light" id="btnCheck">🔍 判断是否密铺</button>
+    <button class="btn btn-light" id="btnClear">🧹 清空画布</button>
+    <button class="btn btn-light" id="btnReset">♻️ 重置全部</button>
+
+    <div class="bubble" id="bubble">
+      👋 你好呀！先在左边选一个图形，点「添加图形」放到画布上；点击图形选中后可以拖动、旋转，拼出美丽的密铺图案吧！
+    </div>
+  </aside>
+</div>
+
+<!-- ===== 底部：生活中的密铺 + 小思考 ===== -->
+<footer>
+  <div class="life-grid">
+    <div class="life-card">
+      <svg width="120" height="80" viewBox="0 0 120 80">
+        <rect x="5" y="5" width="50" height="32" rx="4" fill="#9DC3E6"/>
+        <rect x="65" y="5" width="50" height="32" rx="4" fill="#BFDBFE"/>
+        <rect x="5" y="43" width="50" height="32" rx="4" fill="#BFDBFE"/>
+        <rect x="65" y="43" width="50" height="32" rx="4" fill="#9DC3E6"/>
+      </svg>
+      <h3>地面瓷砖</h3>
+      <p>家里、走廊的地砖一块紧挨一块，没有缝隙也不重叠。</p>
+    </div>
+    <div class="life-card">
+      <svg width="120" height="80" viewBox="0 0 120 80">
+        <g fill="#FCD34D" stroke="#F59E0B" stroke-width="1.5">
+          <polygon points="25,15 38,22 38,36 25,43 12,36 12,22"/>
+          <polygon points="55,15 68,22 68,36 55,43 42,36 42,22"/>
+          <polygon points="85,15 98,22 98,36 85,43 72,36 72,22"/>
+          <polygon points="40,45 53,52 53,66 40,73 27,66 27,52"/>
+          <polygon points="70,45 83,52 83,66 70,73 57,66 57,52"/>
+        </g>
+      </svg>
+      <h3>蜜蜂蜂巢</h3>
+      <p>六边形的巢室整齐排列，是大自然里最经典的密铺。</p>
+    </div>
+    <div class="life-card">
+      <svg width="120" height="80" viewBox="0 0 120 80">
+        <g rx="3">
+          <rect x="5" y="5" width="26" height="22" fill="#F9A8D4"/>
+          <rect x="35" y="5" width="26" height="22" fill="#A7F3D0"/>
+          <rect x="65" y="5" width="26" height="22" fill="#93C5FD"/>
+          <rect x="95" y="5" width="20" height="22" fill="#FDE68A"/>
+          <rect x="5" y="31" width="20" height="22" fill="#C4B5FD"/>
+          <rect x="29" y="31" width="26" height="22" fill="#FDE68A"/>
+          <rect x="59" y="31" width="26" height="22" fill="#F9A8D4"/>
+          <rect x="89" y="31" width="26" height="22" fill="#A7F3D0"/>
+          <rect x="5" y="57" width="26" height="18" fill="#93C5FD"/>
+          <rect x="35" y="57" width="26" height="18" fill="#C4B5FD"/>
+          <rect x="65" y="57" width="26" height="18" fill="#FDE68A"/>
+          <rect x="95" y="57" width="20" height="18" fill="#F9A8D4"/>
+        </g>
+      </svg>
+      <h3>马赛克瓷砖</h3>
+      <p>五颜六色的小拼块组合在一起，拼成漂亮的图案。</p>
+    </div>
+  </div>
+
+  <div class="think">
+    <strong>🤔 课堂小思考：</strong>想一想，为什么正五边形、正八边形、正十二边形不能单独密铺呢？（提示：拼在同一个顶点周围时，几个角加起来能不能正好是 360°？）
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+ * 一、图形定义：顶点以中心点为原点；tiling 表示能否单独密铺
+ * ===================================================================== */
+const SHAPES = {
+  triangle: {
+    name: '正三角形', color: '#FCD34D', stroke: '#F59E0B', tiling: true,
+    verts: [[0, -34], [29, 17], [-29, 17]]
+  },
+  square: {
+    name: '正方形', color: '#9DC3E6', stroke: '#3B82F6', tiling: true,
+    verts: [[-26, -26], [26, -26], [26, 26], [-26, 26]]
+  },
+  rectangle: {
+    name: '长方形', color: '#A9D18E', stroke: '#16A34A', tiling: true,
+    verts: [[-34, -20], [34, -20], [34, 20], [-34, 20]]
+  },
+  parallelogram: {
+    name: '平行四边形', color: '#F9A8D4', stroke: '#EC4899', tiling: true,
+    verts: [[-30, -20], [20, -20], [30, 20], [-20, 20]]
+  },
+  trapezoid: {
+    name: '梯形', color: '#C4B5FD', stroke: '#8B5CF6', tiling: true,
+    verts: [[-18, -20], [18, -20], [34, 20], [-34, 20]]
+  },
+  quad: {
+    name: '不规则四边形', color: '#FDBA74', stroke: '#EA580C', tiling: true,
+    verts: [[-31, -15], [15, -23], [29, 13], [-13, 25]]
+  },
+  hexagon: {
+    name: '正六边形', color: '#93C5FD', stroke: '#2563EB', tiling: true,
+    verts: regularPolygon(6, 28)
+  },
+  pentagon: {
+    name: '正五边形', color: '#FCA5A5', stroke: '#DC2626', tiling: false,
+    verts: regularPolygon(5, 30)
+  },
+  octagon: {
+    name: '正八边形', color: '#6EE7B7', stroke: '#059669', tiling: false,
+    verts: regularPolygon(8, 28)
+  },
+  dodecagon: {
+    name: '正十二边形', color: '#F0ABFC', stroke: '#C026D3', tiling: false,
+    verts: regularPolygon(12, 28)
+  }
+};
+
+/* 生成正 n 边形顶点（最上方一个角） */
+function regularPolygon(n, r) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+    pts.push([Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  return pts;
+}
+
+/* 画布逻辑尺寸 */
+const BOARD_W = 800, BOARD_H = 520;
+
+let currentType = 'square';
+let pieces = [];        // { id, type, x, y, angle(弧度) }
+let selectedId = null;  // 当前选中图形 id
+let pieceSeq = 0;
+
+const svg = document.getElementById('svgBoard');
+const bubble = document.getElementById('bubble');
+const shapeGrid = document.getElementById('shapeGrid');
+const rotateSlider = document.getElementById('rotateSlider');
+const angleVal = document.getElementById('angleVal');
+
+/* =====================================================================
+ * 二、左侧图形按钮
+ * ===================================================================== */
+Object.keys(SHAPES).forEach(key => {
+  const s = SHAPES[key];
+  const btn = document.createElement('button');
+  btn.className = 'shape-btn' + (key === currentType ? ' active' : '');
+  btn.dataset.type = key;
+  const pts = s.verts.map(v => (v[0] * 0.55 + 18) + ',' + (v[1] * 0.55 + 18)).join(' ');
+  btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 36 36">
+    <polygon points="${pts}" fill="${s.color}" stroke="${s.stroke}" stroke-width="1.5"/></svg>
+    <span>${s.name}</span>`;
+  btn.addEventListener('click', () => selectShape(key, btn));
+  shapeGrid.appendChild(btn);
+});
+
+function selectShape(key, btn) {
+  currentType = key;
+  document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showBubble(`已选中「${SHAPES[key].name}」，点击右侧「添加图形」放到画布上吧！`, '');
+}
+
+/* =====================================================================
+ * 三、图形添加、旋转坐标换算与渲染
+ * ===================================================================== */
+function addPiece(type, x, y, angle) {
+  if (x === undefined) {
+    x = BOARD_W / 2 + (Math.random() * 120 - 60);
+    y = BOARD_H / 2 + (Math.random() * 100 - 50);
+  }
+  const piece = { id: ++pieceSeq, type, x, y, angle: angle || 0 };
+  pieces.push(piece);
+  selectedId = piece.id;
+  render();
+  return piece;
+}
+
+/* 顶点旋转 + 平移，返回绝对坐标 */
+function pieceVerts(p) {
+  const base = SHAPES[p.type].verts;
+  const c = Math.cos(p.angle), s = Math.sin(p.angle);
+  return base.map(v => {
+    const rx = v[0] * c - v[1] * s;
+    const ry = v[0] * s + v[1] * c;
+    return [p.x + rx, p.y + ry];
+  });
+}
+
+function render() {
+  svg.innerHTML = '';
+  pieces.forEach(p => {
+    const s = SHAPES[p.type];
+    const pts = pieceVerts(p).map(v => v[0] + ',' + v[1]).join(' ');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', pts);
+    poly.setAttribute('fill', s.color);
+    poly.setAttribute('stroke', s.stroke);
+    poly.setAttribute('stroke-width', '2.5');
+    poly.setAttribute('class', 'shape-piece' + (p.id === selectedId ? ' selected' : ''));
+    poly.dataset.id = p.id;
+    svg.appendChild(poly);
+  });
+  bindDrag();
+  syncRotateUI();
+}
+
+/* 根据选中图形同步滑块与角度文字 */
+function syncRotateUI() {
+  const p = pieces.find(it => it.id === selectedId);
+  if (!p) { rotateSlider.value = 0; angleVal.textContent = '0°'; return; }
+  let deg = Math.round(p.angle * 180 / Math.PI) % 360;
+  if (deg > 180) deg -= 360;
+  if (deg < -180) deg += 360;
+  rotateSlider.value = deg;
+  angleVal.textContent = deg + '°';
+}
+
+/* =====================================================================
+ * 四、拖拽移动 + 点击选中（兼容 PointerEvent 与老版本鼠标事件）
+ * ===================================================================== */
+let dragging = null;
+let dragOffset = { x: 0, y: 0 };
+const usePointer = (typeof window.PointerEvent !== 'undefined');
+
+function onDown(e) {
+  const p = pieces.find(it => it.id == this.dataset.id);
+  if (!p) return;
+  selectedId = p.id;
+  dragging = p;
+  const pt = toBoardCoords(e);
+  dragOffset.x = p.x - pt.x;
+  dragOffset.y = p.y - pt.y;
+  if (usePointer && this.setPointerCapture) this.setPointerCapture(e.pointerId);
+  e.preventDefault();
+  render();
+}
+
+function onMove(e) {
+  if (!dragging) return;
+  const pt = toBoardCoords(e);
+  dragging.x = Math.max(30, Math.min(BOARD_W - 30, pt.x + dragOffset.x));
+  dragging.y = Math.max(30, Math.min(BOARD_H - 30, pt.y + dragOffset.y));
+  render();
+}
+
+function onUp() { dragging = null; }
+
+function bindDrag() {
+  svg.querySelectorAll('.shape-piece').forEach(poly => {
+    if (usePointer) poly.addEventListener('pointerdown', onDown);
+    else poly.addEventListener('mousedown', onDown);
+  });
+}
+
+if (usePointer) {
+  svg.addEventListener('pointermove', onMove);
+  svg.addEventListener('pointerup', onUp);
+  svg.addEventListener('pointercancel', onUp);
+} else {
+  svg.addEventListener('mousemove', onMove);
+  svg.addEventListener('mouseup', onUp);
+  svg.addEventListener('mouseleave', onUp);
+}
+
+function toBoardCoords(e) {
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) / rect.width * BOARD_W,
+    y: (e.clientY - rect.top) / rect.height * BOARD_H
+  };
+}
+
+/* =====================================================================
+ * 五、旋转操作：滑块 + 顺时针 / 逆时针按钮
+ * ===================================================================== */
+rotateSlider.addEventListener('input', () => {
+  const p = pieces.find(it => it.id === selectedId);
+  if (!p) return;
+  p.angle = Number(rotateSlider.value) * Math.PI / 180;
+  angleVal.textContent = rotateSlider.value + '°';
+  render();
+});
+
+function rotateSelected(deltaDeg) {
+  const p = pieces.find(it => it.id === selectedId);
+  if (!p) { showBubble('请先点击画布中的一个图形，再进行旋转哦～', ''); return; }
+  p.angle += deltaDeg * Math.PI / 180;
+  render();
+}
+document.getElementById('btnRotL').addEventListener('click', () => rotateSelected(-15));
+document.getElementById('btnRotR').addEventListener('click', () => rotateSelected(15));
+
+/* =====================================================================
+ * 六、密铺判断：重叠检测（SAT）+ 空隙检测（采样点覆盖）
+ * ===================================================================== */
+function checkTiling() {
+  if (pieces.length === 0) {
+    showBubble('画布还是空的哦！先添加几个图形再判断吧～', '');
+    return;
+  }
+  const overlap = pieces.some((a, i) =>
+    pieces.slice(i + 1).some(b => polygonsOverlap(pieceVerts(a), pieceVerts(b)))
+  );
+  if (overlap) {
+    showBubble('❌ 有重叠，不能密铺！图形叠在一起啦，把它们分开一点试试。', 'overlap');
+    return;
+  }
+  const uncovered = countUncovered();
+  const total = Math.floor(BOARD_W / 20) * Math.floor(BOARD_H / 20);
+  if (uncovered / total > 0.06) {
+    showBubble('⚠️ 有空隙，还不能密铺！图形之间露出了空白，再把图形挪近、多铺几块吧。', 'gap');
+    return;
+  }
+  showBubble('🎉 成功密铺！图形之间既没有重叠，也没有空隙，太棒啦！', 'success');
+}
+
+function polygonsOverlap(a, b) {
+  const A = inset(a, 2), B = inset(b, 2);
+  for (const poly of [A, B]) {
+    for (let i = 0; i < poly.length; i++) {
+      const p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+      const axis = { x: -(p2[1] - p1[1]), y: (p2[0] - p1[0]) };
+      const pa = A.map(p => p[0] * axis.x + p[1] * axis.y);
+      const pb = B.map(p => p[0] * axis.x + p[1] * axis.y);
+      if (Math.max(...pa) < Math.min(...pb) || Math.max(...pb) < Math.min(...pa)) return false;
+    }
+  }
+  return true;
+}
+
+function inset(verts, d) {
+  const cx = verts.reduce((s, v) => s + v[0], 0) / verts.length;
+  const cy = verts.reduce((s, v) => s + v[1], 0) / verts.length;
+  return verts.map(v => [cx + (v[0] - cx) * (1 - d / 40), cy + (v[1] - cy) * (1 - d / 40)]);
+}
+
+function countUncovered() {
+  let uncovered = 0;
+  for (let x = 10; x < BOARD_W; x += 20) {
+    for (let y = 10; y < BOARD_H; y += 20) {
+      if (!pieces.some(p => pointInPolygon([x, y], pieceVerts(p)))) uncovered++;
+    }
+  }
+  return uncovered;
+}
+
+function pointInPolygon(pt, verts) {
+  let inside = false;
+  for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+    const xi = verts[i][0], yi = verts[i][1];
+    const xj = verts[j][0], yj = verts[j][1];
+    if ((yi > pt[1]) !== (yj > pt[1]) &&
+        pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/* =====================================================================
+ * 七、自动演示：每种图形都有对应的铺法；不能密铺的图形演示留缝效果
+ * ===================================================================== */
+function demoCurrent() {
+  pieces = [];
+  selectedId = null;
+  const t = currentType;
+
+  switch (t) {
+    case 'square':   demoGrid('square', 52, 52); break;
+    case 'rectangle':demoGrid('rectangle', 68, 40); break;
+    case 'triangle': demoTriangle();       break;
+    case 'parallelogram': demoQuadLike('parallelogram'); break;
+    case 'trapezoid':demoQuadLike('trapezoid'); break;
+    case 'quad':     demoQuadLike('quad'); break;
+    case 'hexagon':  demoHexagon();       break;
+    default:         demoSpaced(t);       // 五 / 八 / 十二边形：均匀摆放，演示留缝
+  }
+
+  if (SHAPES[t].tiling) {
+    showBubble(`🎬 看！「${SHAPES[t].name}」一块接一块铺满了画布，没有缝隙也不重叠，可以单独密铺。`, 'success');
+  } else {
+    showBubble(`🎬 把「${SHAPES[t].name}」排在一起后，周围留下了明显的缝隙——它不能单独密铺，这就是原因哦！`, 'gap');
+  }
+  render();
+}
+
+/* 矩形 / 正方形网格铺法 */
+function demoGrid(type, w, h) {
+  for (let y = h / 2 + 6; y < BOARD_H; y += h) {
+    for (let x = w / 2 + 6; x < BOARD_W; x += w) {
+      addPiece(type, x, y, 0);
+    }
+  }
+}
+
+/* 正三角形：按等边三角形晶格，正、倒三角形边对边拼接
+ * 顶点参数：外接圆半径 R=34，内切圆半径 rin=17，边长 L=58，高 H=51 */
+function demoTriangle() {
+  const L = 58, H = 51, rin = 17;
+  for (let r = -1; r * H < BOARD_H + H; r++) {
+    const yUp = r * H;
+    // 正三角形
+    for (let c = -1; c * L < BOARD_W + L; c++) {
+      const x = c * L;
+      if (x > -40 && x < BOARD_W + 40 && yUp > -40 && yUp < BOARD_H + 40) {
+        addPiece('triangle', x, yUp, 0);
+      }
+    }
+    // 倒三角形（与相邻两个正三角形共用斜边）
+    const yDown = yUp - rin;
+    for (let c = -1; c * L < BOARD_W + L; c++) {
+      const x = c * L + L / 2;
+      if (x > -40 && x < BOARD_W + 40 && yDown > -40 && yDown < BOARD_H + 40) {
+        addPiece('triangle', x, yDown, Math.PI);
+      }
+    }
+  }
+}
+
+/* 任意四边形（平行四边形 / 梯形 / 不规则四边形）密铺晶格：
+ * 沿每条边旋转 180° 对接，中心平移向量为相邻两顶点之和；
+ * 跨越一条边方向翻转一次朝向（奇偶性 a+b）。 */
+function demoQuadLike(type) {
+  const v = SHAPES[type].verts;
+  const t1 = [v[0][0] + v[1][0], v[0][1] + v[1][1]];
+  const t2 = [v[1][0] + v[2][0], v[1][1] + v[2][1]];
+  for (let a = -8; a <= 12; a++) {
+    for (let b = -8; b <= 12; b++) {
+      const cx = BOARD_W / 2 + a * t1[0] + b * t2[0];
+      const cy = BOARD_H / 2 + a * t1[1] + b * t2[1];
+      if (cx < -50 || cx > BOARD_W + 50 || cy < -50 || cy > BOARD_H + 50) continue;
+      addPiece(type, cx, cy, ((a + b) % 2 === 0) ? 0 : Math.PI);
+    }
+  }
+}
+
+/* 正六边形：点顶蜂窝晶格，水平间距 √3·r，行距 1.5·r，奇偶行错开半格 */
+function demoHexagon() {
+  const r = 28;
+  const dx = Math.sqrt(3) * r;
+  const dy = 1.5 * r;
+  let row = 0;
+  for (let y = r + 2; y < BOARD_H + r; y += dy, row++) {
+    const off = row % 2 ? dx / 2 : 0;
+    for (let x = r + 2 + off; x < BOARD_W + r; x += dx) {
+      addPiece('hexagon', x, y, 0);
+    }
+  }
+}
+
+/* 不能密铺的正多边形：均匀网格摆放，留出明显缝隙 */
+function demoSpaced(type) {
+  const r = 34, stepX = 92, stepY = 86;
+  let row = 0;
+  for (let y = r + 10; y < BOARD_H; y += stepY, row++) {
+    const off = row % 2 ? stepX / 2 : 0;
+    for (let x = r + 10 + off; x < BOARD_W; x += stepX) {
+      addPiece(type, x, y, 0);
+    }
+  }
+}
+
+/* =====================================================================
+ * 八、按钮事件与提示气泡
+ * ===================================================================== */
+document.getElementById('btnAdd').addEventListener('click', () => {
+  addPiece(currentType);
+  const s = SHAPES[currentType];
+  showBubble(s.tiling
+    ? `已放入「${s.name}」。它可以单独密铺，拖动、旋转它，和其他图形拼一拼吧！`
+    : `已放入「${s.name}」。注意：它不能单独密铺，拼的时候会留下缝隙哦～`, '');
+});
+
+document.getElementById('btnDemo').addEventListener('click', demoCurrent);
+document.getElementById('btnCheck').addEventListener('click', checkTiling);
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  pieces = []; selectedId = null; render();
+  showBubble('画布已经清空，可以重新开始拼啦！', '');
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  pieces = []; selectedId = null; currentType = 'square';
+  render();
+  document.querySelectorAll('.shape-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.type === 'square'));
+  showBubble('已重置全部内容，欢迎再次探索有趣的密铺！', '');
+});
+
+function showBubble(text, type) {
+  bubble.className = 'bubble' + (type ? ' ' + type : '');
+  bubble.textContent = text;
+}
+
+/* 初始渲染 */
+render();
+</script>
+</body>
+</html>
